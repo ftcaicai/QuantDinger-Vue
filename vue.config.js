@@ -126,6 +126,12 @@ const vueConfig = {
   },
 
   devServer: {
+    // Disable Vue CLI's default progress-webpack-plugin: it passes options
+    // (dependencies, dependenciesCount, percentBy) that webpack 5's ProgressPlugin
+    // schema rejects (ValidationError: Progress Plugin Invalid Options).
+    client: {
+      progress: false
+    },
     // development server port 8000
     port: 8000,
     proxy: {

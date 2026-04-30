@@ -66,6 +66,10 @@ const vueConfig = {
   chainWebpack: config => {
     config.resolve.alias.set('@$', resolve('src'))
 
+    // 默认的 progress-webpack-plugin 与部分 webpack 5 不一致（vue-cli #6840）。
+    // 已通过 devServer.client.progress: false 阻止 serve 注入该插件；此处使用 webpack 内置 ProgressPlugin。
+    config.plugin('progress').use(webpack.ProgressPlugin, [])
+
     // fixed svg-loader by https://github.com/damianstasik/vue-svg-loader/issues/185#issuecomment-1126721069
 		const svgRule = config.module.rule('svg')
 		// Remove regular svg config from root rules list
@@ -126,21 +130,18 @@ const vueConfig = {
   },
 
   devServer: {
-    // Disable Vue CLI's default progress-webpack-plugin: it passes options
-    // (dependencies, dependenciesCount, percentBy) that webpack 5's ProgressPlugin
-    // schema rejects (ValidationError: Progress Plugin Invalid Options).
+    port: 8000,
+    // 为 false 时 @vue/cli-service 不会注入 progress-webpack-plugin（见 lib/commands/serve.js）
     client: {
       progress: false
     },
-    // development server port 8000
-    port: 8000,
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
         ws: true,
         changeOrigin: true,
-        timeout: 600000, // 10 minutes for long-running requests like backtest
-        proxyTimeout: 600000 // 10 minutes proxy timeout
+        timeout: 600000,
+        proxyTimeout: 600000
       }
     }
   },
